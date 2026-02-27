@@ -19,26 +19,41 @@ parser.add_argument(
     help="Local path to save the model.",
 )
 
-args = parser.parse_args()
+def main():
+    args = parser.parse_args()
 
-model_name = args.model_name
-storage_path = args.storage_path
-model_path = os.path.join(storage_path, model_name)
+    model_name = args.model_name
+    storage_path = args.storage_path
+    model_path = os.path.join(storage_path, model_name)
 
-llm = LLM(model=model_path, load_format="serverless_llm", dtype="float16")
+    llm = LLM(model=model_path, load_format="serverless_llm", dtype="float16")
 
-prompts = [
-    "Hello, my name is",
-    "The president of the United States is",
-    "The capital of France is",
-    "The future of AI is",
-]
+    prompts = [
+        "Hello, my name is",
+        "The president of the United States is",
+        "The capital of France is",
+        "The future of AI is",
+    ]
 
-sampling_params = SamplingParams(temperature=0.8, top_p=0.95)
-outputs = llm.generate(prompts, sampling_params)
+    sampling_params = SamplingParams(temperature=0.8, top_p=0.95)
+    outputs = llm.generate(prompts, sampling_params)
 
-# Print the outputs.
-for output in outputs:
-    prompt = output.prompt
-    generated_text = output.outputs[0].text
-    print(f"Prompt: {prompt!r}, Generated text: {generated_text!r}")
+    # Print the outputs.
+    for output in outputs:
+        prompt = output.prompt
+        generated_text = output.outputs[0].text
+        print(f"Prompt: {prompt!r}, Generated text: {generated_text!r}")
+
+if __name__ == "__main__":
+    # Protect the entry point when using multiprocessing spawn/forkserver.
+    try:
+        # multiprocessing.freeze_support is a no-op on non-Windows, but including here
+        # makes the intent explicit and avoids issues if the script is frozen.
+        from multiprocessing import freeze_support
+
+        freeze_support()
+    except ImportError:
+        pass
+
+    main()
+

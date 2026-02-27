@@ -42,7 +42,8 @@ class VllmModelDownloader:
                 max_model_len=1,
             )
             model_path = os.path.join(storage_path, model_name)
-            model_executer = llm_writer.llm_engine.model_executor
+            # model_executer = llm_writer.llm_engine.model_executor
+            model_executer = llm_writer.llm_engine.engine_core
             # save the models in the ServerlessLLM format
             model_executer.save_serverless_llm_state(
                 path=model_path, pattern=pattern, max_size=max_size
@@ -85,8 +86,13 @@ class VllmModelDownloader:
                 _run_writer(input_dir, model_name)
         except Exception as e:
             print(f"An error occurred while saving the model: {e}")
-            # remove the output dir
-            shutil.rmtree(os.path.join(storage_path, model_name))
+            # remove the output dir if it was created
+            output_dir = os.path.join(storage_path, model_name)
+            if os.path.exists(output_dir):
+                try:
+                    shutil.rmtree(output_dir)
+                except OSError as cleanup_err:
+                    print(f"Warning: failed to remove {output_dir}: {cleanup_err}")
             raise RuntimeError(
                 f"Failed to save {model_name} for vllm backend: {e}"
             ) from e
@@ -120,18 +126,34 @@ parser.add_argument(
     help="Tensor parallel size.",
 )
 
-args = parser.parse_args()
+def main():
+    args = parser.parse_args()
 
-model_name = args.model_name
-local_model_path = args.local_model_path
-storage_path = args.storage_path
-tensor_parallel_size = args.tensor_parallel_size
+    model_name = args.model_name
+    local_model_path = args.local_model_path
+    storage_path = args.storage_path
+    tensor_parallel_size = args.tensor_parallel_size
 
-downloader = VllmModelDownloader()
-downloader.download_vllm_model(
-    model_name,
-    "float16",
-    tensor_parallel_size=tensor_parallel_size,
-    storage_path=storage_path,
-    local_model_path=local_model_path,
-)
+    downloader = VllmModelDownloader()
+    downloader.download_vllm_model(
+        model_name,
+        "float16",
+        tensor_parallel_size=tensor_parallel_size,
+        storage_path=storage_path,
+        local_model_path=local_model_path,
+    )
+
+
+if __name__ == "__main__":
+    # Protect the entry point when using multiprocessing spawn/forkserver.
+    try:
+        # multiprocessing.freeze_support is a no-op on non-Windows, but including here
+        # makes the intent explicit and avoids issues if the script is frozen.
+        from multiprocessing import freeze_support
+
+        freeze_support()
+    except ImportError:
+        pass
+
+    main()
+
