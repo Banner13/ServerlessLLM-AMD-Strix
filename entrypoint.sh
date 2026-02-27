@@ -28,7 +28,7 @@ DEFAULT_RAY_HEAD_ADDRESS="sllm_head:6379"
 DEFAULT_STORAGE_PATH="/models"
 
 # Source conda
-source /opt/conda/etc/profile.d/conda.sh
+# source /opt/conda/etc/profile.d/conda.sh
 
 # Function to initialize the head node
 initialize_head_node() {
@@ -36,7 +36,7 @@ initialize_head_node() {
 
   # Activate head environment
   echo "Activating head conda environment..."
-  conda activate head
+  # conda activate head
 
   RAY_PORT="${RAY_PORT:-$DEFAULT_RAY_PORT}"
   RAY_RESOURCES="${RAY_RESOURCES:-$DEFAULT_RAY_RESOURCES_HEAD}"
@@ -68,7 +68,7 @@ initialize_worker_node() {
 
   # Activate worker environment
   echo "Activating worker conda environment..."
-  conda activate worker
+  # conda activate worker
 
   # Start the worker
   RAY_HEAD_ADDRESS="${RAY_HEAD_ADDRESS:-$DEFAULT_RAY_HEAD_ADDRESS}"
